@@ -1,5 +1,5 @@
 {
-    "name": "Bayernwerk Energiemonitor",
+    "name": "EON Energiemonitor",
     "render_readme": true,
     "domains": [
       "sensor"
