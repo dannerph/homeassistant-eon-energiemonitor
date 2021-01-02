@@ -113,6 +113,7 @@ class EONEnergiemonitor(EONEnergiemonitorAPI):
 
         json = await self.request_data()
         self._data = self._prepare_data(json)
+        self._notify_listeners()
 
     def _prepare_data(self, json):
         
