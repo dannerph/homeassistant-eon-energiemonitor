@@ -1,8 +1,8 @@
-# Bayernwerk Energiemonitor [[Home Assistant](https://www.home-assistant.io/) Component]
+# EON Energiemonitor [[Home Assistant](https://www.home-assistant.io/) Component]
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
 
-This custom component integrates the Bayernwerk Energiemonitor into Home Assistant. A Demo can be found here: <https://energiemonitor.bayernwerk.de/demo>
+This custom component integrates the EON Energiemonitor into Home Assistant. The sensor values are fetched from the API that is the backend of the EON Energiemonitor and follows the visualization in <https://energiemonitor.bayernwerk.de/demo>.
 
 ## Installation
 
@@ -11,7 +11,7 @@ Copy content of custom_components to your local custom_components folder and add
 ## Configuration
 
 ```yaml
-bw-energymonitor:
+eon-energiemonitor:
   region_code: XXXXXX
 ```
 

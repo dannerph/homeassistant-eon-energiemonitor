@@ -1,11 +1,11 @@
-# Bayernwerk Energiemonitor
+# EON Energiemonitor
 
-This custom component integrates the Bayernwerk Energiemonitor into Home Assistant. A Demo can be found here: <https://energiemonitor.bayernwerk.de/demo>
+This custom component integrates the EON Energiemonitor into Home Assistant. The sensor values are fetched from the API that is the backend of the EON Energiemonitor and follows the visualization in <https://energiemonitor.bayernwerk.de/demo>.
 
 ## Configuration
 
 ```yaml
-bw-energymonitor:
+eon-energiemonitor:
   region_code: XXXXXX
 ```
 
