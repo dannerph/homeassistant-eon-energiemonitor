@@ -4,14 +4,10 @@ import logging
 
 import aiohttp
 import voluptuous as vol
-import json
 
 from homeassistant.helpers import discovery
 import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.event import (
-    async_call_later,
-    async_track_utc_time_change,
-)
+from homeassistant.helpers.event import async_track_utc_time_change
 from homeassistant.const import CONF_SCAN_INTERVAL
 import homeassistant.util.dt as dt_util
 

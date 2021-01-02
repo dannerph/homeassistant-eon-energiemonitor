@@ -51,7 +51,7 @@ class EONEnergySensor(Entity):
     @property
     def name(self):
         """Return the name of the device."""
-        return self._name.capitalize()
+        return f"eon_energiemonitor_{self._name.capitalize()}"
 
     @property
     def icon(self):
