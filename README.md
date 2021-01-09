@@ -26,3 +26,101 @@ Configuration variables:
 Works best with the [power-distribution-card](https://github.com/JonahKr/power-distribution-card) by [JonahKr](https://github.com/JonahKr).
 
 ![example power distribution card](doc/example.png "power-distribution-card example ")
+
+<details>
+  <summary>Power-distribution-card config</summary>
+  
+```
+type: 'custom:power-distribution-card'
+title: Energiemonitor
+entities:
+  - decimals: 2
+    display_abs: true
+    name: Bio
+    unit_of_display: kWh
+    unit_of_measurement: kWh
+    icon: 'mdi:lightning-bolt-outline'
+    producer: true
+    entity: sensor.eon_energiemonitor_bio
+    preset: producer
+  - decimals: 2
+    display_abs: true
+    name: Netzbezug
+    unit_of_display: kWh
+    unit_of_measurement: kWh
+    icon: 'mdi:transmission-tower'
+    entity: sensor.eon_energiemonitor_secondaryinfeed
+    preset: grid
+  - decimals: 2
+    display_abs: true
+    name: Solar
+    unit_of_display: kWh
+    unit_of_measurement: kWh
+    icon: 'mdi:solar-power'
+    producer: true
+    entity: sensor.eon_energiemonitor_solar
+    preset: solar
+  - decimals: 2
+    display_abs: true
+    name: Haushalte
+    unit_of_display: kWh
+    unit_of_measurement: kWh
+    consumer: true
+    invert_value: true
+    icon: 'mdi:home-assistant'
+    entity: sensor.eon_energiemonitor_domestic
+    preset: home
+  - decimals: 2
+    display_abs: true
+    name: Wasser
+    unit_of_display: kWh
+    unit_of_measurement: kWh
+    icon: 'mdi:hydro-power'
+    producer: true
+    entity: sensor.eon_energiemonitor_water
+    preset: hydro
+  - decimals: 2
+    display_abs: true
+    name: Gemeinde
+    unit_of_display: kWh
+    unit_of_measurement: kWh
+    consumer: true
+    invert_value: true
+    icon: 'mdi:lightbulb'
+    entity: sensor.eon_energiemonitor_public
+    preset: consumer
+  - decimals: 2
+    display_abs: true
+    name: weitere Erzeuger
+    unit_of_display: kWh
+    unit_of_measurement: kWh
+    icon: 'mdi:lightning-bolt-outline'
+    producer: true
+    entity: sensor.eon_energiemonitor_others
+    preset: producer
+  - decimals: 2
+    display_abs: true
+    name: Industrie
+    unit_of_display: kWh
+    unit_of_measurement: kWh
+    consumer: true
+    invert_value: true
+    icon: 'mdi:lightbulb'
+    entity: sensor.eon_energiemonitor_industrial
+    preset: consumer
+center:
+  type: bars
+  content:
+    - name: Autarky
+      preset: custom
+      bar_color: lightblue
+      bar_bg_color: ''
+      entity: sensor.eon_energiemonitor_autarky
+    - name: Mix
+      preset: custom
+      bar_color: green
+      bar_bg_color: ''
+      entity: sensor.eon_energiemonitor_energymix
+animation: slide
+```
+</details>
