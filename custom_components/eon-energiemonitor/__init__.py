@@ -125,7 +125,7 @@ class EONEnergiemonitor(EONEnergiemonitorAPI):
                 'unit': '%',
                 },
             'secondaryInFeed': {
-                'state': json['secondaryInFeed'],
+                'state': float(json['consumptions']['total']) - float(json['feedIn']['total']),
                 'attributes': None,
                 'unit': 'kWh',
                 },
