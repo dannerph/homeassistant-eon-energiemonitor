@@ -1,6 +1,7 @@
 {
   "domain": "eon-energiemonitor",
   "name": "EON Energiemonitor",
+  "version": "0.1.3",
   "documentation": "https://github.com/dannerph/homeassistant-eon-energiemonitor",
   "requirements": ["aiohttp>=3.6.2"],
   "dependencies": [],
