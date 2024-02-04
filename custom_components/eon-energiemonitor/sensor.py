@@ -22,6 +22,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 
     sensors.append(EONEnergySensor("bio", eon_energiemonitor))
     sensors.append(EONEnergySensor("solar", eon_energiemonitor))
+    sensors.append(EONEnergySensor("wind", eon_energiemonitor))
     sensors.append(EONEnergySensor("water", eon_energiemonitor))
     sensors.append(EONEnergySensor("others", eon_energiemonitor))
 
