@@ -1,0 +1,6 @@
+# Metadata for regenerating the upstream GitHub issue (see scripts/generate-scope-issue.py)
+upstream_repo: dannerph/homeassistant-eon-energiemonitor
+issue_number: 4
+title: "Feature: Multiple EON regions via optional `scope` list (v0.3.0, backward compatible)"
+labels:
+  - enhancement
