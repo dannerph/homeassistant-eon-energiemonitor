@@ -1,0 +1,12 @@
+{
+  "issues": {
+    "region_not_found": {
+      "title": "EON Energiemonitor: Invalid region_code",
+      "description": "region_code \"{region_code}\" was not found by the EON API. Resolve your code with: `curl -s \"https://api-energiemonitor.eon.com/region-data?regionUrlKey=<slug>\"` where `<slug>` is the last path segment of your municipality dashboard URL. Configure the numeric `regionCode` in configuration.yaml under `eon-energiemonitor:`."
+    },
+    "update_failed": {
+      "title": "EON Energiemonitor: No data",
+      "description": "Update failed ({error}). Check network connectivity, region_code, and Home Assistant logs (filter: eon_energiemonitor)."
+    }
+  }
+}

@@ -1,0 +1,30 @@
+# Optional Lovelace card: show a hint when configuration or API data is missing.
+# Place above the power-distribution-card. Requires optional template from doc/examples/.
+#
+type: conditional
+conditions:
+  - condition: template
+    value_template: >
+      {{ states('sensor.eon_energiemonitor_status') != 'OK'
+         or states('sensor.eon_energiemonitor_setup_hint') == 'Not configured' }}
+card:
+  type: markdown
+  content: >
+    {% if states('sensor.eon_energiemonitor_setup_hint') == 'Not configured' %}
+    **EON Energiemonitor not configured**
+
+    Add an `eon-energiemonitor:` block to `configuration.yaml` with your numeric `region_code`
+    (see README) and restart Home Assistant.
+
+    Resolve region_code:
+    `curl -s "https://api-energiemonitor.eon.com/region-data?regionUrlKey=<slug>"`
+    {% elif states('sensor.eon_energiemonitor_status') == 'Region not found' %}
+    **EON Energiemonitor: invalid region_code**
+
+    Configured: `{{ state_attr('sensor.eon_energiemonitor_status', 'region_code') }}` —
+    see **Settings → Repairs** or logs (`eon_energiemonitor`).
+    {% else %}
+    **EON Energiemonitor: {{ states('sensor.eon_energiemonitor_status') }}**
+
+    Details: `sensor.eon_energiemonitor_status` and **Settings → Repairs**.
+    {% endif %}

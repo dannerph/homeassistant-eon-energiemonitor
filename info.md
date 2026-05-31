@@ -1,28 +1,20 @@
-# EON Energiemonitor [[Home Assistant](https://www.home-assistant.io/) Component]
+# EON Energiemonitor
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
-
-This custom component integrates the EON Energiemonitor into Home Assistant. The sensor values are fetched from the API that is the backend of the EON Energiemonitor and follows the visualization in <https://energiemonitor.bayernwerk.de/demo>.
-
-## Installation
-
-Copy content of custom_components to your local custom_components folder and add the following lines to your configuration.
+Custom component for [Home Assistant](https://www.home-assistant.io/) — live data from the EON Energiemonitor API.
 
 ## Configuration
 
 ```yaml
 eon-energiemonitor:
-  region_code: XXXXXX
+  region_code: "12345678"
   scan_interval: 5
 ```
 
-Configuration variables:
+* **region_code** (required, digits only): Resolve via  
+  `https://api-energiemonitor.eon.com/region-data?regionUrlKey=<slug>`  
+  (`<slug>` = last segment of your dashboard URL)
+* **scan_interval** (optional): Minutes between updates (default: 5)
 
-* **region_code**: The location ID you want to collect values from. You can find it by analyzing the network traffic of the webpage as shown in the following.
-* **scan_interval** (optional): How often new updates should be fetched. In minutes, default 5 minutes same as the official web app.
+Invalid or unknown `region_code`: see README — status sensor and **Settings → Repairs**.
 
-![how to find region code](doc/regionCode.png "Network traffic analysis ")
-
-Works best with the [power-distribution-card](https://github.com/JonahKr/power-distribution-card) by [JonahKr](https://github.com/JonahKr).
-
-![example power distribution card](doc/example.png "power-distribution-card example ")
+Dashboard: [power-distribution-card](https://github.com/JonahKr/power-distribution-card) + `ui/eon-energiemonitor-power-card.yaml`.
