@@ -1,0 +1,14 @@
+# Example: primary region + one scope (e.g. municipality + district)
+#
+# Legacy region_code → sensor.eon_energiemonitor_*
+# scope alias landkreis → sensor.eon_energiemonitor_landkreis_*
+#
+# Resolve codes: doc/REGIONEN.md or region-data?regionUrlKey=<slug>
+# Full spec: doc/SCOPE_SPEC.md
+
+eon-energiemonitor:
+  region_code: "01234567"
+  scan_interval: 5
+  scope:
+    - region_code: "01234"
+      alias: landkreis
