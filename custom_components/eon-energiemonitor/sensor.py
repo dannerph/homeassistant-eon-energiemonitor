@@ -2,7 +2,11 @@
 import logging
 from typing import List, Optional
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorStateClass,
+)
 from homeassistant.helpers.entity import EntityCategory
 
 from . import DOMAIN, ENERGY_METRICS, EONEnergiemonitor, EONEnergiemonitorHub
@@ -133,6 +137,7 @@ class EONEnergySensor(SensorEntity):
 
     _attr_should_poll = False
     _attr_icon = "mdi:flash"
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
@@ -148,6 +153,14 @@ class EONEnergySensor(SensorEntity):
         self._attr_name = name
         self._attr_unique_id = unique_id
 
+        if metric in {"autarky", "energyMix"}:
+            self._attr_device_class = SensorDeviceClass.PERCENTAGE
+            self._attr_native_unit_of_measurement = "%"
+            self._attr_icon = "mdi:chart-donut"
+        else:
+            self._attr_device_class = SensorDeviceClass.ENERGY
+            self._attr_native_unit_of_measurement = "kWh"
+
     @property
     def extra_state_attributes(self) -> dict:
         """Return sensor attributes."""
@@ -160,7 +173,6 @@ class EONEnergySensor(SensorEntity):
         if data is None:
             self._attr_native_value = None
             self._attributes = {}
-            self._attr_native_unit_of_measurement = None
             self._attr_available = False
             return
 
@@ -168,7 +180,6 @@ class EONEnergySensor(SensorEntity):
         if state is None:
             self._attr_native_value = None
             self._attributes = data.get("attributes") or {}
-            self._attr_native_unit_of_measurement = data.get("unit")
             self._attr_available = False
             return
 
@@ -183,7 +194,9 @@ class EONEnergySensor(SensorEntity):
 
         self._attr_available = True
         self._attributes = data.get("attributes") or {}
-        self._attr_native_unit_of_measurement = data.get("unit")
+        unit = data.get("unit")
+        if unit:
+            self._attr_native_unit_of_measurement = unit
 
     def update_callback(self) -> None:
         """Schedule a state update."""
