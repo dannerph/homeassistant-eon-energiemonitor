@@ -52,6 +52,8 @@ Replace `<slug>` with the slug from your dashboard URL (e.g. `https://energiemon
 curl -s "https://api-energiemonitor.eon.com/region-data?regionUrlKey=<slug>"
 ```
 
+Plain `curl` may receive Cloudflare challenge HTML instead of JSON; use a browser, the dashboard network tab (Method 2), or `curl_cffi` if that happens.
+
 Example response shape:
 
 ```json
@@ -79,7 +81,7 @@ Open your dashboard, open developer tools → Network, and look for `meter-data?
 | Empty or non-numeric `region_code` | `""`, `"my-town"` | `ConfigError` at startup (schema validation) |
 | Unknown numeric code | API HTTP 404 | Integration loads; energy sensors stay **unavailable**; status sensor shows **Region not found**; entry under **Settings → Repairs** |
 | Temporary network/API error | timeout, 5xx | Status sensor + repair hint; retry every `scan_interval` minutes |
-| Cloudflare browser challenge | HTTP 403 HTML | Status **Cloudflare challenge**; V2 retries with browser TLS next interval |
+| Cloudflare browser challenge | HTTP 403 HTML | Status **Cloudflare challenge**; V2 already uses browser TLS (`curl_cffi`) and retries the same request next interval |
 
 After fixing `region_code`, restart Home Assistant (or wait for the next scheduled update). On success, `sensor.eon_energiemonitor_status` becomes **OK** and repairs are cleared.
 

@@ -20,17 +20,17 @@ Specification for supporting several EON regions in one Home Assistant integrati
 ```yaml
 eon-energiemonitor:
   region_code: "01234567"   # legacy slot (your primary region)
-  scan_interval: 5          # default for all regions
+  scan_interval: 15         # default for all regions (v0.4.0+)
   scope:
     - region_code: "01234"
       alias: landkreis
-      # scan_interval: 10   # optional override for this scope only
+      # scan_interval: 30   # optional override for this scope only
 ```
 
 | Key | Required | Meaning |
 |-----|----------|---------|
 | `region_code` | yes | Legacy region; drives unprefixed entities |
-| `scan_interval` | no (default 5) | Global poll interval (minutes) |
+| `scan_interval` | no (default 15) | Global poll interval (minutes) |
 | `scope` | no | Extra regions; empty or omitted = current behaviour |
 | `scope[].region_code` | yes per entry | Numeric EON `regionCode` |
 | `scope[].alias` | yes per entry | Prefix for entity / `unique_id` names |
