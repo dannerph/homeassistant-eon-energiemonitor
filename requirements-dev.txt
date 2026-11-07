@@ -1,0 +1,4 @@
+pytest>=8.0
+pytest-asyncio>=0.24
+voluptuous>=0.14
+curl_cffi>=0.13.0

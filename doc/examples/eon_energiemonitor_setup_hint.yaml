@@ -1,0 +1,21 @@
+# Optional Home Assistant package: template sensor when the integration is not loaded.
+# Save as e.g. integrations/eon_energiemonitor_setup_hint.yaml (with packages enabled).
+template:
+  - sensor:
+      - name: "EON Energiemonitor setup"
+        unique_id: eon_energiemonitor_setup_hint
+        icon: mdi:alert-circle-outline
+        state: >
+          {% if states('sensor.eon_energiemonitor_status') in ['unknown', 'unavailable', 'none'] %}
+            Not configured
+          {% else %}
+            Integration loaded
+          {% endif %}
+        attributes:
+          hint: >
+            {% if states('sensor.eon_energiemonitor_status') in ['unknown', 'unavailable', 'none'] %}
+              Add eon-energiemonitor to configuration.yaml with your numeric region_code (not the URL slug), then restart Home Assistant.
+            {% else %}
+              See sensor.eon_energiemonitor_status
+            {% endif %}
+          region_lookup: "https://api-energiemonitor.eon.com/region-data?regionUrlKey=<slug>"

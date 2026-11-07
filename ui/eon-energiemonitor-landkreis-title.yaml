@@ -1,0 +1,7 @@
+# Optional heading above a scope power-distribution-card (visual editor friendly).
+# State from sensor.eon_energiemonitor_<alias>_region (region-data API).
+#
+type: entity
+entity: sensor.eon_energiemonitor_landkreis_region
+name: false
+icon: mdi:map-marker-radius

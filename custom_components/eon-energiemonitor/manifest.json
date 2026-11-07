@@ -1,11 +1,13 @@
 {
   "domain": "eon-energiemonitor",
   "name": "EON Energiemonitor",
-  "version": "0.1.5",
+  "version": "0.4.0",
+  "homeassistant": "2024.1.0",
   "documentation": "https://github.com/dannerph/homeassistant-eon-energiemonitor",
-  "requirements": ["aiohttp>=3.6.2"],
+  "requirements": ["curl_cffi>=0.13.0"],
   "dependencies": [],
   "codeowners": [
     "@dannerph"
-  ]
+  ],
+  "iot_class": "cloud_polling"
 }

@@ -1,0 +1,109 @@
+# EON Energiemonitor — scope power card (v0.3.0)
+#
+# Prerequisites:
+#   1. eon-energiemonitor scope entry in configuration.yaml (alias matches entity prefix)
+#   2. HACS: https://github.com/JonahKr/power-distribution-card
+#   3. Restart Home Assistant; verify entities (filter: eon_energiemonitor_<alias>)
+#
+# Pair with ui/eon-energiemonitor-scope-title.yaml (entity: sensor.eon_energiemonitor_<alias>_region)
+#
+type: custom:power-distribution-card
+title: Energiemonitor
+entities:
+  - decimals: 2
+    display_abs: true
+    name: Bio
+    unit_of_display: kWh
+    unit_of_measurement: kWh
+    icon: mdi:lightning-bolt-outline
+    producer: true
+    entity: sensor.eon_energiemonitor_landkreis_bio
+    preset: producer
+  - decimals: 2
+    display_abs: true
+    name: Netzbezug
+    unit_of_display: kWh
+    unit_of_measurement: kWh
+    icon: mdi:transmission-tower
+    entity: sensor.eon_energiemonitor_landkreis_secondaryinfeed
+    preset: grid
+  - decimals: 2
+    display_abs: true
+    name: Solar
+    unit_of_display: kWh
+    unit_of_measurement: kWh
+    icon: mdi:solar-power
+    producer: true
+    entity: sensor.eon_energiemonitor_landkreis_solar
+    preset: solar
+  - decimals: 2
+    display_abs: true
+    name: Wind
+    unit_of_display: kWh
+    unit_of_measurement: kWh
+    icon: mdi:weather-windy
+    producer: true
+    entity: sensor.eon_energiemonitor_landkreis_wind
+    preset: producer
+  - decimals: 2
+    display_abs: true
+    name: Haushalte
+    unit_of_display: kWh
+    unit_of_measurement: kWh
+    consumer: true
+    invert_value: true
+    icon: mdi:home-assistant
+    entity: sensor.eon_energiemonitor_landkreis_domestic
+    preset: home
+  - decimals: 2
+    display_abs: true
+    name: Wasser
+    unit_of_display: kWh
+    unit_of_measurement: kWh
+    icon: mdi:hydro-power
+    producer: true
+    entity: sensor.eon_energiemonitor_landkreis_water
+    preset: hydro
+  - decimals: 2
+    display_abs: true
+    name: Öffentlich
+    unit_of_display: kWh
+    unit_of_measurement: kWh
+    consumer: true
+    invert_value: true
+    icon: mdi:lightbulb
+    entity: sensor.eon_energiemonitor_landkreis_public
+    preset: consumer
+  - decimals: 2
+    display_abs: true
+    name: weitere Erzeuger
+    unit_of_display: kWh
+    unit_of_measurement: kWh
+    icon: mdi:lightning-bolt-outline
+    producer: true
+    entity: sensor.eon_energiemonitor_landkreis_others
+    preset: producer
+  - decimals: 2
+    display_abs: true
+    name: Industrie
+    unit_of_display: kWh
+    unit_of_measurement: kWh
+    consumer: true
+    invert_value: true
+    icon: mdi:lightbulb
+    entity: sensor.eon_energiemonitor_landkreis_industrial
+    preset: consumer
+center:
+  type: bars
+  content:
+    - name: Autarky
+      preset: custom
+      bar_color: lightblue
+      bar_bg_color: ""
+      entity: sensor.eon_energiemonitor_landkreis_autarky
+    - name: Mix
+      preset: custom
+      bar_color: green
+      bar_bg_color: ""
+      entity: sensor.eon_energiemonitor_landkreis_energymix
+animation: slide
