@@ -1,0 +1,75 @@
+{
+  "regionCode": "09175135",
+  "timestamp": {
+    "start": "1793787300",
+    "end": "1793788200"
+  },
+  "autarky": "25.799133003149457",
+  "secondaryInFeed": "1652.1815917189251",
+  "consumptions": {
+    "list": [
+      {
+        "name": "domestic",
+        "unit": "kWh",
+        "usage": "361.0827657347521",
+        "numberOfInstallations": "7863",
+        "timestamp": "1793787300"
+      },
+      {
+        "name": "industrial",
+        "unit": "kWh",
+        "usage": "1772.2436172626503",
+        "numberOfInstallations": "938",
+        "timestamp": "1793787300"
+      },
+      {
+        "name": "public",
+        "unit": "kWh",
+        "usage": "93.30742680572511",
+        "numberOfInstallations": "125",
+        "timestamp": "1793787300"
+      }
+    ],
+    "total": "2226.633809803128"
+  },
+  "feedIn": {
+    "list": [
+      {
+        "name": "others",
+        "unit": "kWh",
+        "usage": "106.829416155",
+        "numberOfInstallations": "12",
+        "installedCapacity": "8052.938",
+        "timestamp": "1793787300"
+      },
+      {
+        "name": "pubsol",
+        "unit": "kWh",
+        "usage": "10.429910143097093",
+        "numberOfInstallations": "18",
+        "installedCapacity": "412.606",
+        "timestamp": "1793787300"
+      },
+      {
+        "name": "solar",
+        "unit": "kWh",
+        "usage": "457.19289178610575",
+        "numberOfInstallations": "1780",
+        "installedCapacity": "14172.750000000002",
+        "timestamp": "1793787300"
+      },
+      {
+        "name": "wind",
+        "unit": "kWh",
+        "usage": "0",
+        "numberOfInstallations": "1",
+        "installedCapacity": "0.5",
+        "timestamp": "1793787300"
+      }
+    ],
+    "total": "574.4522180842029"
+  },
+  "feedInRenewables": "467.62280192920286",
+  "energyMix": "21.001333936025546",
+  "dailyCo2Savings": "1961.9791722378843"
+}

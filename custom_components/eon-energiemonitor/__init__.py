@@ -1,9 +1,7 @@
-"""Support for EON Energiemonitor."""
+"""Support for EON Energiemonitor (V2)."""
 import logging
-import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
-import aiohttp
 import voluptuous as vol
 
 try:
@@ -18,111 +16,36 @@ from homeassistant.helpers.issue_registry import IssueSeverity
 from homeassistant.const import CONF_SCAN_INTERVAL
 import homeassistant.util.dt as dt_util
 
+from .client import EONEnergiemonitorAPI
+from .const import (
+    API_BASE_URL,
+    CONF_ALIAS,
+    CONF_REGION_CODE,
+    CONF_SCOPE,
+    DASHBOARD_BASE_URL,
+    DEFAULT_SCAN_INTERVAL,
+    DOMAIN,
+    ENERGY_METRICS,
+    ERROR_MESSAGES,
+    ISSUE_REGION_NOT_FOUND,
+    ISSUE_SCOPE_REGION_NOT_FOUND,
+    ISSUE_SCOPE_UPDATE_FAILED,
+    ISSUE_UPDATE_FAILED,
+)
+from .parsing import prepare_meter_data
+from .validation import (
+    validate_alias,
+    validate_region_code,
+    validate_unique_aliases,
+)
+
 _LOGGER = logging.getLogger(__name__)
-
-DOMAIN = "eon-energiemonitor"
-
-CONF_REGION_CODE = "region_code"
-CONF_SCOPE = "scope"
-CONF_ALIAS = "alias"
-
-API_BASE_URL = "https://api-energiemonitor.eon.com/"
-REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=30)
-DASHBOARD_BASE_URL = "https://energiemonitor.bayernwerk.de/"
-
-ISSUE_REGION_NOT_FOUND = "region_not_found"
-ISSUE_UPDATE_FAILED = "update_failed"
-ISSUE_SCOPE_REGION_NOT_FOUND = "scope_region_not_found"
-ISSUE_SCOPE_UPDATE_FAILED = "scope_update_failed"
-
-ENERGY_METRICS = (
-    "autarky",
-    "secondaryInFeed",
-    "energyMix",
-    "bio",
-    "solar",
-    "wind",
-    "water",
-    "others",
-    "domestic",
-    "public",
-    "industrial",
-)
-
-RESERVED_ALIASES = frozenset(
-    {
-        "status",
-        "region",
-        "autarky",
-        "secondaryinfeed",
-        "energymix",
-        "bio",
-        "solar",
-        "wind",
-        "water",
-        "others",
-        "domestic",
-        "public",
-        "industrial",
-    }
-)
-
-_ALIAS_PATTERN = re.compile(r"^[a-z0-9_]+$")
-
-ERROR_MESSAGES = {
-    "region_not_found": "Region not found",
-    "network": "Network error",
-    "timeout": "Timeout",
-    "invalid_response": "Invalid API response",
-    "parse": "Failed to parse data",
-    "not_configured": "Not configured",
-}
-
-
-def _validate_region_code(value: str) -> str:
-    """Validate region_code from configuration."""
-    code = str(value).strip()
-    if not code:
-        raise vol.Invalid(
-            "region_code must not be empty. See README for how to resolve your code."
-        )
-    if not code.isdigit():
-        raise vol.Invalid(
-            "region_code must be numeric (not the URL slug). "
-            "Resolve via https://api-energiemonitor.eon.com/region-data?regionUrlKey=<slug>"
-        )
-    return code
-
-
-def _validate_alias(value: str) -> str:
-    """Validate scope alias for entity prefixes."""
-    alias = str(value).strip()
-    if not alias:
-        raise vol.Invalid("scope alias must not be empty.")
-    if not _ALIAS_PATTERN.match(alias):
-        raise vol.Invalid(
-            "scope alias must match ^[a-z0-9_]+$ (lowercase letters, digits, underscore)."
-        )
-    if alias.lower() in RESERVED_ALIASES:
-        raise vol.Invalid(f"scope alias '{alias}' is reserved.")
-    return alias
-
-
-def _validate_scope(scopes: List[dict]) -> List[dict]:
-    """Ensure scope aliases are unique."""
-    seen: set[str] = set()
-    for entry in scopes:
-        alias = entry[CONF_ALIAS]
-        if alias in seen:
-            raise vol.Invalid(f"Duplicate scope alias '{alias}'.")
-        seen.add(alias)
-    return scopes
 
 
 SCOPE_ENTRY_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_REGION_CODE): vol.All(cv.string, _validate_region_code),
-        vol.Required(CONF_ALIAS): vol.All(cv.string, _validate_alias),
+        vol.Required(CONF_REGION_CODE): vol.All(cv.string, validate_region_code),
+        vol.Required(CONF_ALIAS): vol.All(cv.string, validate_alias),
         vol.Optional(CONF_SCAN_INTERVAL): cv.positive_int,
     }
 )
@@ -131,10 +54,10 @@ CONFIG_SCHEMA = vol.Schema(
     {
         DOMAIN: vol.Schema(
             {
-                vol.Required(CONF_REGION_CODE): vol.All(cv.string, _validate_region_code),
-                vol.Optional(CONF_SCAN_INTERVAL, default=5): cv.positive_int,
+                vol.Required(CONF_REGION_CODE): vol.All(cv.string, validate_region_code),
+                vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): cv.positive_int,
                 vol.Optional(CONF_SCOPE, default=[]): vol.All(
-                    cv.ensure_list, [SCOPE_ENTRY_SCHEMA], _validate_scope
+                    cv.ensure_list, [SCOPE_ENTRY_SCHEMA], validate_unique_aliases
                 ),
             }
         )
@@ -222,63 +145,6 @@ def _async_manage_scope_issues(
         )
 
 
-class EONEnergiemonitorAPI:
-    """Representation of the EON Energiemonitor API."""
-
-    def __init__(self, region_code: str):
-        """Initialize the API client."""
-        self._base_url = API_BASE_URL
-        self._region_code = region_code
-        self.last_error: Optional[str] = None
-
-    async def _get_json(self, url: str) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
-        """Fetch JSON from the API. Returns (data, error_key)."""
-        try:
-            async with aiohttp.ClientSession(timeout=REQUEST_TIMEOUT) as session:
-                async with session.get(url) as resp:
-                    if resp.status == 404:
-                        return None, "region_not_found"
-                    if resp.status != 200:
-                        return None, f"http_{resp.status}"
-                    data = await resp.json()
-        except aiohttp.ClientError:
-            return None, "network"
-        except TimeoutError:
-            return None, "timeout"
-
-        if not isinstance(data, dict):
-            return None, "invalid_response"
-        return data, None
-
-    async def request_region_info(self) -> Optional[Dict[str, Any]]:
-        """Request municipality metadata from region-data API."""
-        url = f"{self._base_url}region-data?regionCode={self._region_code}"
-        data, error = await self._get_json(url)
-        if error:
-            _LOGGER.debug("region-data failed for %s: %s", self._region_code, error)
-            return None
-        _LOGGER.debug("region-data loaded for %s", self._region_code)
-        return data
-
-    async def request_data(self) -> Optional[Dict[str, Any]]:
-        """Request meter data from the EON Energiemonitor API."""
-        self.last_error = None
-        url = f"{self._base_url}meter-data?regionCode={self._region_code}"
-        data, error = await self._get_json(url)
-        if error:
-            self.last_error = error
-            if error == "region_not_found":
-                _LOGGER.error(
-                    "Region '%s' not found (HTTP 404). Check region_code.",
-                    self._region_code,
-                )
-            else:
-                _LOGGER.error("meter-data failed for %s: %s", self._region_code, error)
-            return None
-        _LOGGER.debug("meter-data loaded for %s", self._region_code)
-        return data
-
-
 class EONEnergiemonitor(EONEnergiemonitorAPI):
     """Coordinator for EON Energiemonitor sensor data."""
 
@@ -288,7 +154,7 @@ class EONEnergiemonitor(EONEnergiemonitorAPI):
         region_code: str,
         *,
         alias: Optional[str] = None,
-        scan_interval: int = 5,
+        scan_interval: int = DEFAULT_SCAN_INTERVAL,
     ):
         """Initialize EON Energiemonitor."""
         super().__init__(region_code)
@@ -377,7 +243,7 @@ class EONEnergiemonitor(EONEnergiemonitorAPI):
             return False
 
         try:
-            self._data = self._prepare_data(payload)
+            self._data = prepare_meter_data(payload)
             self.last_error = None
             self._set_status_data(ok=True)
             self._manage_issues()
@@ -422,70 +288,8 @@ class EONEnergiemonitor(EONEnergiemonitorAPI):
         }
 
     def _prepare_data(self, payload: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
-        """Map API payload to sensor data."""
-        out: Dict[str, Dict[str, Any]] = {}
-
-        if "autarky" in payload:
-            out["autarky"] = {
-                "state": payload["autarky"],
-                "attributes": {},
-                "unit": "%",
-            }
-
-        if "energyMix" in payload:
-            out["energyMix"] = {
-                "state": payload["energyMix"],
-                "attributes": {},
-                "unit": "%",
-            }
-
-        consumptions = payload.get("consumptions") or {}
-        feed_in = payload.get("feedIn") or {}
-
-        if "secondaryInFeed" in payload:
-            secondary_value = payload["secondaryInFeed"]
-        elif consumptions.get("total") is not None and feed_in.get("total") is not None:
-            secondary_value = float(consumptions["total"]) - float(feed_in["total"])
-        else:
-            secondary_value = None
-
-        if secondary_value is not None:
-            out["secondaryInFeed"] = {
-                "state": secondary_value,
-                "attributes": {},
-                "unit": "kWh",
-            }
-
-        for item in consumptions.get("list") or []:
-            if not item.get("name"):
-                continue
-            out[item["name"]] = {
-                "state": item["usage"],
-                "attributes": {
-                    "numberOfInstallations": item.get("numberOfInstallations"),
-                },
-                "unit": item.get("unit", "kWh"),
-            }
-
-        for item in feed_in.get("list") or []:
-            if not item.get("name"):
-                continue
-            attributes = {
-                "numberOfInstallations": item.get("numberOfInstallations"),
-                "installedCapacity (kW)": item.get("installedCapacity"),
-            }
-            capacity = float(item.get("installedCapacity") or 0)
-            if capacity > 0:
-                utilization = float(item["usage"]) / (capacity / 4.0) * 100.0
-                attributes["utilization (%)"] = round(utilization, 1)
-
-            out[item["name"]] = {
-                "state": item["usage"],
-                "attributes": attributes,
-                "unit": item.get("unit", "kWh"),
-            }
-
-        return out
+        """Map API payload to sensor data (kept for tests / call sites)."""
+        return prepare_meter_data(payload)
 
     def add_update_listener(self, listener) -> None:
         """Register a sensor listener for update notifications."""

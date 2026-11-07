@@ -15,13 +15,13 @@ Via HACS: add this repository as a custom repository (category: Integration), in
 ```yaml
 eon-energiemonitor:
   region_code: "12345678"
-  scan_interval: 5
+  scan_interval: 15
 ```
 
 Configuration variables:
 
 * **region_code** (required): Numeric location ID for the EON API (`meter-data?regionCode=…`). Must contain digits only — not the municipality URL slug.
-* **scan_interval** (optional): Update interval in **minutes**. Default: `5` (same as the web app).
+* **scan_interval** (optional): Update interval in **minutes**. Default: `15` (API aggregation window; was `5` before v0.4.0).
 * **scope** (optional, v0.3.0+): Additional regions (e.g. district vs municipality). Each entry needs `region_code` and `alias` (prefix for entity names). See [doc/SCOPE_SPEC.md](doc/SCOPE_SPEC.md).
 
 ### Multiple regions (scope)
@@ -31,11 +31,11 @@ Keep **`region_code`** as the primary region (existing entity IDs unchanged). Ad
 ```yaml
 eon-energiemonitor:
   region_code: "12345678"
-  scan_interval: 5
+  scan_interval: 15
   scope:
     - region_code: "1234"
       alias: landkreis
-      # scan_interval: 10   # optional override for this entry
+      # scan_interval: 30   # optional override for this entry
 ```
 
 Legacy entities stay `sensor.eon_energiemonitor_*`. Scope entities use the alias prefix, e.g. `sensor.eon_energiemonitor_landkreis_autarky`, `sensor.eon_energiemonitor_landkreis_status`.
@@ -79,6 +79,7 @@ Open your dashboard, open developer tools → Network, and look for `meter-data?
 | Empty or non-numeric `region_code` | `""`, `"my-town"` | `ConfigError` at startup (schema validation) |
 | Unknown numeric code | API HTTP 404 | Integration loads; energy sensors stay **unavailable**; status sensor shows **Region not found**; entry under **Settings → Repairs** |
 | Temporary network/API error | timeout, 5xx | Status sensor + repair hint; retry every `scan_interval` minutes |
+| Cloudflare browser challenge | HTTP 403 HTML | Status **Cloudflare challenge**; V2 retries with browser TLS next interval |
 
 After fixing `region_code`, restart Home Assistant (or wait for the next scheduled update). On success, `sensor.eon_energiemonitor_status` becomes **OK** and repairs are cleared.
 
@@ -105,7 +106,11 @@ Full **API field reference**: [doc/API.md](doc/API.md) (region-data, meter-data,
 * `sensor.eon_energiemonitor_region` (municipality name from region-data)
 * `sensor.eon_energiemonitor_autarky`
 * `sensor.eon_energiemonitor_secondaryinfeed`
-* `sensor.eon_energiemonitor_energymix`
+* `sensor.eon_energiemonitor_energymix` (renewables / **consumption**, API `energyMix`)
+* `sensor.eon_energiemonitor_renewable_generation_share` (renewables / **generation**, website KPI)
+* `sensor.eon_energiemonitor_dominant_source` (largest producer share; attribute `name`)
+* `sensor.eon_energiemonitor_generation_total` / `consumption_total` / `feed_in_renewables`
+* `sensor.eon_energiemonitor_co2_savings_today`
 * `sensor.eon_energiemonitor_solar`
 * `sensor.eon_energiemonitor_domestic`
 * …
@@ -212,3 +217,26 @@ animation: slide
 ```
 
 </details>
+
+## Development
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+pytest
+```
+
+## Changelog
+
+### 0.4.0 (V2)
+
+* Fetch API via `curl_cffi` Chrome TLS impersonation (Cloudflare challenge workaround; no cookie bridge).
+* Default `scan_interval` is 15 minutes.
+* New sensors: `renewable_generation_share`, `dominant_source`, `generation_total`, `consumption_total`, `feed_in_renewables`, `co2_savings_today`.
+* `energymix` still mirrors API `energyMix` (renewables / consumption).
+* Unit tests under `tests/`.
+
+### 0.3.0
+
+* Optional multi-region `scope` list (see `doc/SCOPE_SPEC.md`).

@@ -9,9 +9,13 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.helpers.entity import EntityCategory
 
-from . import DOMAIN, ENERGY_METRICS, EONEnergiemonitor, EONEnergiemonitorHub
+from . import DOMAIN, EONEnergiemonitor, EONEnergiemonitorHub
+from .const import ENERGY_METRICS, PERCENTAGE_METRICS
 
 _LOGGER = logging.getLogger(__name__)
+
+# Not every HA release exposes SensorDeviceClass.PERCENTAGE.
+_PERCENTAGE_DEVICE_CLASS = getattr(SensorDeviceClass, "PERCENTAGE", None)
 
 
 def _sensor_names(metric: str, alias: Optional[str]) -> tuple[str, str]:
@@ -153,12 +157,17 @@ class EONEnergySensor(SensorEntity):
         self._attr_name = name
         self._attr_unique_id = unique_id
 
-        if metric in {"autarky", "energyMix"}:
-            self._attr_device_class = SensorDeviceClass.PERCENTAGE
+        if metric in PERCENTAGE_METRICS:
+            self._attr_device_class = _PERCENTAGE_DEVICE_CLASS
             self._attr_native_unit_of_measurement = "%"
             self._attr_icon = "mdi:chart-donut"
+        elif metric == "co2_savings_today":
+            self._attr_device_class = None
+            self._attr_native_unit_of_measurement = "t"
+            self._attr_icon = "mdi:molecule-co2"
         else:
-            self._attr_device_class = SensorDeviceClass.ENERGY
+            # Interval kWh (15 min window), not a cumulative meter reading.
+            self._attr_device_class = None
             self._attr_native_unit_of_measurement = "kWh"
 
     @property

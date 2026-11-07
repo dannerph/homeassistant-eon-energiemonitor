@@ -6,7 +6,7 @@
     },
     "update_failed": {
       "title": "EON Energiemonitor: No data",
-      "description": "Update failed ({error}). Check network connectivity, region_code, and Home Assistant logs (filter: eon_energiemonitor)."
+      "description": "Update failed ({error}). Check network connectivity, region_code, and Home Assistant logs (filter: eon_energiemonitor). If the error is \"Cloudflare challenge\", the API blocked a plain client; V2 retries with browser TLS on the next interval."
     },
     "scope_region_not_found": {
       "title": "EON Energiemonitor ({alias}): Invalid region_code",

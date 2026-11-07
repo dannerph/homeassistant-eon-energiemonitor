@@ -8,7 +8,7 @@
 
 eon-energiemonitor:
   region_code: "01234567"
-  scan_interval: 5
+  scan_interval: 15
   scope:
     - region_code: "01234"
       alias: landkreis
